@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>【歷史檔案】第一屆校友盃排球賽</title>
+    <style>
+      /* 基礎設定 */
+      body {
+        font-family: "微軟正黑體", sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        padding: 15px;
+        max-width: 800px;
+        margin: auto;
+        color: #333;
+      }
+      h1 {
+        text-align: center;
+        color: #b71c1c;
+        margin-bottom: 5px;
+        font-size: 24px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+
+      /* 按鈕導航 */
+      .nav-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      button.nav-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        background: white;
+        color: #555;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+      button.nav-btn.active {
+        background: #b71c1c;
+        color: white;
+      }
+
+      /* 內容區塊 */
+      .section {
+        display: none;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      .section.active {
+        display: block;
+        animation: fadeIn 0.3s;
+      }
+
+      /* 表單元件 */
+      select,
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+        background: #fff;
+      }
+      textarea {
+        height: 80px;
+        resize: vertical;
+      }
+      button.action-btn {
+        width: 100%;
+        padding: 10px;
+        background: #444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      /* 留言與列表 */
+      .comment-box {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        border-left: 3px solid #b71c1c;
+      }
+      .missing-data {
+        color: #d32f2f;
+        font-weight: bold;
+        background: #ffebee;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      ul {
+        padding-left: 20px;
+        margin: 0;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🏆 第一屆校友盃 (歷史存檔)</h1>
+    <p class="subtitle">2025/5/17 @ 嚮網休閒運動旗艦館</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn active" onclick="showSection('team')">
+        球隊陣容
+      </button>
+      <button class="nav-btn" onclick="showSection('schedule')">
+        歷史賽程
+      </button>
+      <button class="nav-btn" onclick="showSection('referee')">裁判紀錄</button>
+    </div>
+
+    <div id="teamSection" class="section active">
+      <h3 style="margin-top: 0">🏐 歷史球隊查詢</h3>
+      <label>請選擇球隊：</label>
+      <select id="teamSelect">
+        <option value="">-- 資料載入中 --</option>
+      </select>
+
+      <div
+        id="teamInfo"
+        style="
+          display: none;
+          margin-top: 20px;
+          padding-top: 10px;
+          border-top: 1px dashed #ddd;
+        "
+      >
+        <h2
+          id="teamNameDisplay"
+          style="color: #b71c1c; margin: 0 0 10px 0"
+        ></h2>
+        <p><strong>教練：</strong><span id="teamCoach"></span></p>
+        <p>
+          <strong>第一屆隊員：</strong><br /><span
+            id="teamMembers"
+            style="line-height: 1.6"
+          ></span>
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0" />
+
+        <h4>當年隊伍介紹</h4>
+        <div
+          id="introDisplay"
+          style="color: #666; font-style: italic; margin-bottom: 10px"
+        ></div>
+
+        <details>
+          <summary style="cursor: pointer; color: #999; font-size: 12px">
+            (點此編輯歷史介紹)
+          </summary>
+          <textarea id="introInput" placeholder="補充歷史介紹..."></textarea>
+          <button class="action-btn" id="btnSaveIntro">更新存檔</button>
+        </details>
+
+        <h4 style="margin-top: 20px">校友留言回憶</h4>
+        <div id="commentsList"></div>
+        <textarea id="commentInput" placeholder="寫下當年的回憶..."></textarea>
+        <button class="action-btn" id="btnPostComment">送出留言</button>
+      </div>
+    </div>
+
+    <div id="scheduleSection" class="section">
+      <h3 style="margin-top: 0">📅 歷史賽程表</h3>
+      <label>查詢隊伍：</label>
+      <select id="scheduleSelect">
+        <option value="">-- 請選擇 --</option>
+      </select>
+      <div id="matchList" style="margin-top: 15px"></div>
+    </div>
+
+    <div id="refereeSection" class="section">
+      <h3 style="margin-top: 0">⚖️ 裁判執法紀錄</h3>
+      <label>查詢隊伍：</label>
+      <select id="refereeSelect">
+        <option value="">-- 請選擇 --</option>
+      </select>
+      <div id="refereeList" style="margin-top: 15px"></div>
+    </div>
+
+    <script type="module">
+      // 使用穩定的 Firebase 版本 (9.22.0)
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        set,
+        push,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCK0sdardOjpXonYsrj1QTwySG8j_Hg4IE",
+        authDomain: "dtvolley1.firebaseapp.com",
+        projectId: "dtvolley1",
+        databaseURL:
+          "https://dtvolley1-default-rtdb.asia-southeast1.firebasedatabase.app",
+        messagingSenderId: "118152771149",
+        appId: "1:118152771149:web:c790269697f4072ffd4e04",
+      };
+
+      // 初始化 Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // ==========================================
+      // 第一屆 完整資料 (History Data)
+      // ==========================================
+      const teamList = [
+        {
+          name: "小魔女抖瑞咪-大同女排",
+          members: [
+            "林怡辰",
+            "李佳穎",
+            "陳婕恩",
+            "林恩伃",
+            "周芙榛",
+            "蘇子涵",
+            "張育綺",
+          ],
+          coach: "高麗婷",
+        },
+        {
+          name: "魔人啾啾",
+          members: [
+            "王于綺",
+            "王晴韻",
+            "董偉蓉",
+            "傅俐蓉",
+            "曾慶宇",
+            "劉慧筠",
+            "李雅婷",
+            "吳佩容",
+            "謝秀蘭",
+          ],
+        },
+        {
+          name: "OK炒意麵",
+          members: ["傅思敏", "許庭瑜", "陳玉萍", "郭水月", "許倢瑈", "黃珍燕"],
+        },
+        { name: "屏大幼教", members: [], note: "資料待補" },
+        { name: "屏東女中", members: [], note: "資料待補" },
+        { name: "屏科休運", members: [], note: "資料待補" },
+        {
+          name: "兜不住喜",
+          members: [
+            "賴子程",
+            "郭彥壽",
+            "張駿宥",
+            "吳軒辰",
+            "施永峯",
+            "施永敬",
+            "唐飛",
+          ],
+        },
+        {
+          name: "ㄨㄟㄦˇㄅㄤ",
+          members: ["林子旭", "陳信縊", "李育豈", "李興彦", "林彥廷", "林立"],
+        },
+        {
+          name: "AMA早午餐",
+          members: [
+            "李丞奕",
+            "李庭文",
+            "林旻鋒",
+            "吳宇峻",
+            "蘇峻豪",
+            "徐立榮",
+            "蘇育弘",
+            "黃偉哲",
+          ],
+        },
+        {
+          name: "哥布林東佑",
+          members: [
+            "古竣丞",
+            "倪易得",
+            "王冠弘",
+            "呂文傑",
+            "許智傑",
+            "鄭晁霖",
+            "林韋丞",
+          ],
+        },
+        {
+          name: "靠臉吃飯",
+          members: [
+            "陳致瑋",
+            "林蘶峰",
+            "涂奇恩",
+            "陳紹淞",
+            "陳俊錡",
+            "蔡家駿",
+            "潘俊廷",
+          ],
+          coach: "王暄閔",
+        },
+        {
+          name: "我米蟲拉",
+          members: [
+            "蘇桓均",
+            "王韋中",
+            "王博毅",
+            "侯天皓",
+            "周辰諺",
+            "陳恩",
+            "陳冠儒",
+            "陳智遠",
+            "陳竣崴",
+          ],
+        },
+        {
+          name: "第酒屆笑友",
+          members: ["張仡迪", "李俊佑", "林俊光", "林俊曲", "林士瑋", "蕭佩綺"],
+        },
+      ];
+
+      const matchSchedule = [
+        {
+          time: "09:00",
+          teamA: "小魔女抖瑞咪-大同女排",
+          teamB: "OK炒意麵",
+          referee: "屏東女中",
+        },
+        {
+          time: "10:00",
+          teamA: "屏東女中",
+          teamB: "魔人啾啾",
+          referee: "屏科休運",
+        },
+        {
+          time: "11:00",
+          teamA: "屏科休運",
+          teamB: "OK炒意麵",
+          referee: "屏大幼教",
+        },
+        {
+          time: "12:00",
+          teamA: "魔人啾啾",
+          teamB: "屏大幼教",
+          referee: "OK炒意麵",
+        },
+        {
+          time: "13:00",
+          teamA: "小魔女抖瑞咪-大同女排",
+          teamB: "屏科休運",
+          referee: "魔人啾啾",
+        },
+        {
+          time: "14:00",
+          teamA: "屏東女中",
+          teamB: "屏大幼教",
+          referee: "小魔女抖瑞咪-大同女排",
+        },
+        { time: "15:00", teamA: "B2", teamB: "A3", referee: "A1" },
+        { time: "16:00", teamA: "A2", teamB: "B3", referee: "B1" },
+        { time: "17:00", teamA: "A1", teamB: "7場勝", referee: "7場敗" },
+        { time: "18:00", teamA: "B1", teamB: "8場勝", referee: "8場敗" },
+        {
+          time: "19:00",
+          teamA: "9場敗",
+          teamB: "10場敗",
+          referee: "9場勝+10場勝",
+        },
+        {
+          time: "20:00",
+          teamA: "9場勝",
+          teamB: "10場勝",
+          referee: "9場敗+10場敗",
+        },
+        {
+          time: "09:00",
+          teamA: "兜不住喜",
+          teamB: "AMA早午餐",
+          referee: "ㄨㄟㄦˇㄅㄤ",
+        },
+        {
+          time: "10:00",
+          teamA: "第酒屆笑友",
+          teamB: "ㄨㄟㄦˇㄅㄤ",
+          referee: "兜不住喜",
+        },
+        {
+          time: "11:00",
+          teamA: "AMA早午餐",
+          teamB: "我米蟲拉",
+          referee: "哥布林東佑",
+        },
+        {
+          time: "12:00",
+          teamA: "兜不住喜",
+          teamB: "靠臉吃飯",
+          referee: "AMA早午餐",
+        },
+        {
+          time: "13:00",
+          teamA: "ㄨㄟㄦˇㄅㄤ",
+          teamB: "哥布林東佑",
+          referee: "我米蟲拉",
+        },
+        {
+          time: "14:00",
+          teamA: "靠臉吃飯",
+          teamB: "AMA早午餐",
+          referee: "第酒屆笑友",
+        },
+        {
+          time: "15:00",
+          teamA: "兜不住喜",
+          teamB: "我米蟲拉",
+          referee: "靠臉吃飯",
+        },
+        {
+          time: "16:00",
+          teamA: "第酒屆笑友",
+          teamB: "哥布林東佑",
+          referee: "AMA早午餐",
+        },
+        {
+          time: "17:00",
+          teamA: "我米蟲拉",
+          teamB: "靠臉吃飯",
+          referee: "兜不住喜",
+        },
+        { time: "18:00", teamA: "A2", teamB: "B2", referee: "A1+B1" },
+        { time: "19:00", teamA: "A1", teamB: "B1", referee: "A2+B2" },
+      ];
+
+      // ==========================================
+      // 程式邏輯
+      // ==========================================
+
+      // 1. 初始化下拉選單 (確保一定有資料)
+      function initDropdowns() {
+        const teamSel = document.getElementById("teamSelect");
+        const schSel = document.getElementById("scheduleSelect");
+        const refSel = document.getElementById("refereeSelect");
+
+        // 清空預設值
+        teamSel.innerHTML = '<option value="">-- 請選擇球隊 --</option>';
+        schSel.innerHTML = '<option value="">-- 請選擇球隊 --</option>';
+
+        // 填入球隊選項
+        teamList.forEach((t) => {
+          const opt = document.createElement("option");
+          opt.value = t.name;
+          opt.textContent = t.name;
+          teamSel.appendChild(opt);
+          schSel.appendChild(opt.cloneNode(true));
+        });
+
+        // 填入裁判選項
+        refSel.innerHTML = '<option value="">-- 請選擇隊伍 --</option>';
+        const uniqueRefs = [...new Set(matchSchedule.map((m) => m.referee))];
+        uniqueRefs.forEach((r) => {
+          const opt = document.createElement("option");
+          opt.value = r;
+          opt.textContent = r;
+          refSel.appendChild(opt);
+        });
+      }
+
+      // 立即執行初始化
+      initDropdowns();
+
+      // 2. 球隊查詢功能
+      document.getElementById("teamSelect").addEventListener("change", (e) => {
+        const name = e.target.value;
+        const infoBox = document.getElementById("teamInfo");
+
+        if (!name) {
+          infoBox.style.display = "none";
+          return;
+        }
+
+        infoBox.style.display = "block";
+        const team = teamList.find((t) => t.name === name);
+
+        // 顯示基本資料
+        document.getElementById("teamNameDisplay").textContent = team.name;
+        document.getElementById("teamCoach").textContent = team.coach || "無";
+
+        // 處理隊員名單 (如果是空的顯示待補)
+        const membersHTML =
+          team.members && team.members.length > 0
+            ? team.members.join("、")
+            : '<span class="missing-data">資料缺失，待校友補充</span>';
+        document.getElementById("teamMembers").innerHTML = membersHTML;
+
+        // 讀取 Firebase 資料 (介紹 & 留言)
+        // 使用 'v1_' 前綴來區隔歷史資料
+        onValue(ref(db, `v1_intro/${name}`), (snap) => {
+          document.getElementById("introDisplay").textContent =
+            snap.val() || "目前尚無歷史介紹...";
+          document.getElementById("introInput").value = snap.val() || "";
+        });
+
+        onValue(ref(db, `v1_comments/${name}`), (snap) => {
+          const list = document.getElementById("commentsList");
+          list.innerHTML = "";
+          const data = snap.val();
+          if (data) {
+            Object.values(data)
+              .reverse()
+              .forEach((c) => {
+                const div = document.createElement("div");
+                div.className = "comment-box";
+                div.innerHTML = `<small style="color:#888">${c.time}</small><div>${c.text}</div>`;
+                list.appendChild(div);
+              });
+          } else {
+            list.innerHTML =
+              '<div style="color:#999;text-align:center">尚無留言</div>';
+          }
+        });
+      });
+
+      // 3. 儲存介紹與留言
+      document.getElementById("btnSaveIntro").addEventListener("click", () => {
+        const name = document.getElementById("teamSelect").value;
+        const text = document.getElementById("introInput").value;
+        if (name)
+          set(ref(db, `v1_intro/${name}`), text).then(() =>
+            alert("✅ 歷史介紹已更新")
+          );
+      });
+
+      document
+        .getElementById("btnPostComment")
+        .addEventListener("click", () => {
+          const name = document.getElementById("teamSelect").value;
+          const text = document.getElementById("commentInput").value.trim();
+          if (name && text) {
+            push(ref(db, `v1_comments/${name}`), {
+              text,
+              time: new Date().toLocaleString(),
+            });
+            document.getElementById("commentInput").value = "";
+          } else {
+            alert("請選擇球隊並輸入內容");
+          }
+        });
+
+      // 4. 歷史賽程查詢
+      document
+        .getElementById("scheduleSelect")
+        .addEventListener("change", (e) => {
+          const name = e.target.value;
+          const list = document.getElementById("matchList");
+          if (!name) {
+            list.innerHTML = "";
+            return;
+          }
+
+          const matches = matchSchedule.filter(
+            (m) => m.teamA === name || m.teamB === name
+          );
+          list.innerHTML = matches.length
+            ? "<ul>" +
+              matches
+                .map(
+                  (m) =>
+                    `<li><strong>${m.time}</strong> ${m.teamA} vs ${m.teamB} <span style="font-size:12px;color:#666">(裁: ${m.referee})</span></li>`
+                )
+                .join("") +
+              "</ul>"
+            : "無比賽資料";
+        });
+
+      // 5. 裁判紀錄查詢
+      document
+        .getElementById("refereeSelect")
+        .addEventListener("change", (e) => {
+          const name = e.target.value;
+          const list = document.getElementById("refereeList");
+          if (!name) {
+            list.innerHTML = "";
+            return;
+          }
+
+          const matches = matchSchedule.filter((m) => m.referee === name);
+          list.innerHTML = matches.length
+            ? "<ul>" +
+              matches
+                .map(
+                  (m) =>
+                    `<li><strong>${m.time}</strong> 執法：${m.teamA} vs ${m.teamB}</li>`
+                )
+                .join("") +
+              "</ul>"
+            : "無執法紀錄";
+        });
+
+      // 6. 分頁切換功能
+      window.showSection = function (id) {
+        document
+          .querySelectorAll(".section")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(id + "Section").classList.add("active");
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        event.target.classList.add("active");
+      };
+    </script>
+  </body>
+</html>
