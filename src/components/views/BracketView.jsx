@@ -94,7 +94,7 @@ export function BracketView() {
                 🏆 六強晉級圖
             </h2>
 
-            <div className="min-w-[900px] flex justify-center py-8 relative px-12">
+            <div className="min-w-[900px] flex justify-start md:justify-center py-8 relative px-6 md:px-12">
                 
                 {/* Connecting Lines (Absolute behind everything) */}
                 <div className="absolute inset-0 pointer-events-none opacity-30 hidden md:block">
