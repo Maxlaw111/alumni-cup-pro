@@ -37,9 +37,12 @@ export function MatchCard({ match }) {
                 <span className="font-medium flex items-center gap-2">
                     {isLive && <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />}
                     {isFinished && <span className="w-2 h-2 rounded-full bg-green-500" />}
+                    <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded px-1.5 py-0.5 text-[10px] shadow-sm">
+                        M{match.id}
+                    </span>
                     {match.time}
-                    <span className="bg-white border rounded px-1.5 py-0.5 text-[10px]">{match.court}</span>
-                    <span className="bg-purple-100 text-purple-700 border border-purple-200 rounded px-1.5 py-0.5 text-[10px]">{match.type}</span>
+                    <span className="bg-white border rounded px-1.5 py-0.5 text-[10px] shadow-sm">{match.court}</span>
+                    <span className="bg-purple-100 text-purple-700 border border-purple-200 rounded px-1.5 py-0.5 text-[10px] shadow-sm">{match.type}</span>
                 </span>
                 <span className="truncate max-w-[100px] text-right">裁判: {match.referee}</span>
             </div>
