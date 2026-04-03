@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MATCH_SCHEDULE } from "../../constants/data";
 import { db } from "../../lib/firebase";
-import { ref, update, onValue } from "firebase/database";
+import { ref, update, set, onValue } from "firebase/database";
 import { clsx } from "clsx";
 
 const DEFAULT_MATCH_STATE = {
@@ -120,6 +120,13 @@ export function AdminDashboard() {
         });
     };
 
+    const handleResetAll = () => {
+        if (window.prompt("這將清除「所有」賽事的即時比分與打球狀態 (包含完賽紀錄)！\n若確定要將系統全新歸零，請輸入小寫 'reset' :") === "reset") {
+            set(ref(db, "v1_matches"), {});
+            window.alert("已清空所有賽事比分資料，恢復預設狀態！");
+        }
+    };
+
     if (!isAuthenticated) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -150,6 +157,12 @@ export function AdminDashboard() {
 
             {!activeMatchId ? (
                 <div className="space-y-3 pb-8">
+                    <button 
+                        onClick={handleResetAll}
+                        className="w-full bg-red-700 hover:bg-red-600 border border-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg mb-6 flex justify-center items-center gap-2 transform transition active:scale-95"
+                    >
+                        🚨 一鍵重置所有比賽數據 (Reset All Matches)
+                    </button>
                     <p className="text-gray-400 text-sm mb-2">點擊場次開始計分：</p>
                     {MATCH_SCHEDULE.map(match => {
                         const mData = matchData[match.id];
