@@ -2,6 +2,8 @@ import { MATCH_SCHEDULE } from "../../constants/data";
 import { MatchCard } from "../MatchCard";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
 
+import { CONFIG } from "../../constants/config";
+
 export function HomeView() {
     const liveData = useLiveMatches();
 
@@ -20,9 +22,20 @@ export function HomeView() {
     return (
         <div className="pb-24">
             {/* Hero Section */}
-            <div className="bg-primary text-white p-6 pt-12 rounded-b-[2rem] shadow-lg mb-6">
-                <h1 className="text-3xl font-bold mb-2">第一屆校友盃</h1>
-                <p className="opacity-90 text-sm">2025/5/17 @ 嚮網休閒運動旗艦館</p>
+            <div className="bg-gradient-to-br from-primary via-indigo-600 to-purple-700 text-white p-6 pt-12 rounded-b-[2rem] shadow-xl mb-6 relative overflow-hidden">
+                {/* Decorative background shapes */}
+                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
+                
+                <div className="relative z-10">
+                    <h1 className="text-3xl font-extrabold mb-2 tracking-tight drop-shadow-sm">{CONFIG.SEASON_NAME}</h1>
+                    <p className="opacity-90 text-sm font-medium tracking-wide flex items-center gap-1">
+                        🗓 {CONFIG.EVENT_DATE} 
+                    </p>
+                    <p className="opacity-80 text-xs mt-1">
+                        📍 {CONFIG.LOCATION}
+                    </p>
+                </div>
             </div>
 
             <div className="px-4">

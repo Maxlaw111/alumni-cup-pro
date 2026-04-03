@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#b71c1c",
-        secondary: "#444",
+        primary: "#4f46e5", // Modern Indigo
+        secondary: "#0f172a", // Slate 900
       },
       fontFamily: {
         sans: ["Inter", "Roboto", "sans-serif"],
