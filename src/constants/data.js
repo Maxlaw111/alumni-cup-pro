@@ -35,7 +35,7 @@ export const MATCH_SCHEDULE = [
     { id: 2, time: "10:00-10:50", court: "場B", type: "預賽 (A組)", teamA: "靠臉吃飯", teamB: "AMA早午餐", referee: "哥布林東佑" },
     // 10:50 預賽
     { id: 3, time: "10:50-11:40", court: "場A", type: "預賽 (B組)", teamA: "哥布林東佑", teamB: "狗才打欄中", referee: "靠臉吃飯" },
-    { id: 4, time: "10:50-11:40", court: "場B", type: "預賽 (B組)", teamA: "狗才打欄中", teamB: "ㄨㄟㄦˇㄅㄤ", referee: "AMA早午餐" },
+    { id: 4, time: "13:20-14:10", court: "場B", type: "預賽 (B組)", teamA: "狗才打欄中", teamB: "ㄨㄟㄦˇㄅㄤ", referee: "AMA早午餐" },
     // 11:40 預賽
     { id: 5, time: "11:40-12:30", court: "場A", type: "預賽 (A組)", teamA: "惡龍咆哮", teamB: "AMA早午餐", referee: "ㄨㄟㄦˇㄅㄤ" },
     { id: 6, time: "11:40-12:30", court: "場B", type: "預賽 (A組)", teamA: "靠臉吃飯", teamB: "也就這樣", referee: "狗才打欄中" },
