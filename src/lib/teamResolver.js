@@ -53,22 +53,36 @@ export const getMatchResult = (matchId, liveData) => {
 
 export const resolveTeamName = (name, liveData) => {
     if (!name) return name;
-    if (name.includes("A組第一")) return getStandings("A組", liveData)[0]?.name || name;
-    if (name.includes("A組第二")) return getStandings("A組", liveData)[1]?.name || name;
-    if (name.includes("A組第三")) return getStandings("A組", liveData)[2]?.name || name;
-    if (name.includes("B組第一")) return getStandings("B組", liveData)[0]?.name || name;
-    if (name.includes("B組第二")) return getStandings("B組", liveData)[1]?.name || name;
-    if (name.includes("B組第三")) return getStandings("B組", liveData)[2]?.name || name;
+
+    // Protection 1: Ensure all Group phase matches (M1~M9) are finished
+    const groupStageIds = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const isGroupPhasesFinished = groupStageIds.every(id => liveData[id]?.isFinished);
     
+    if (isGroupPhasesFinished) {
+        if (name.includes("A組第一")) return getStandings("A組", liveData)[0]?.name || name;
+        if (name.includes("A組第二")) return getStandings("A組", liveData)[1]?.name || name;
+        if (name.includes("A組第三")) return getStandings("A組", liveData)[2]?.name || name;
+        if (name.includes("B組第一")) return getStandings("B組", liveData)[0]?.name || name;
+        if (name.includes("B組第二")) return getStandings("B組", liveData)[1]?.name || name;
+        if (name.includes("B組第三")) return getStandings("B組", liveData)[2]?.name || name;
+    }
+    
+    // Protection 2: Ensure the target playoff match is truly finished
+    const safePlayoffResult = (matchId, key) => {
+        const result = getMatchResult(matchId, liveData);
+        if (result.isFinished && result[key]) return result[key];
+        return name; // Returns original name block if not finished
+    };
+
     let target = name;
-    if (name.includes("第10場勝隊")) target = getMatchResult(10, liveData).winner || name;
-    else if (name.includes("第11場勝隊")) target = getMatchResult(11, liveData).winner || name;
-    else if (name.includes("第12場勝隊")) target = getMatchResult(12, liveData).winner || name;
-    else if (name.includes("第13場勝隊")) target = getMatchResult(13, liveData).winner || name;
-    else if (name.includes("第10場敗隊")) target = getMatchResult(10, liveData).loser || name;
-    else if (name.includes("第11場敗隊")) target = getMatchResult(11, liveData).loser || name;
-    else if (name.includes("第12場敗隊")) target = getMatchResult(12, liveData).loser || name;
-    else if (name.includes("第13場敗隊")) target = getMatchResult(13, liveData).loser || name;
+    if (name.includes("第10場勝隊")) target = safePlayoffResult(10, 'winner');
+    else if (name.includes("第11場勝隊")) target = safePlayoffResult(11, 'winner');
+    else if (name.includes("第12場勝隊")) target = safePlayoffResult(12, 'winner');
+    else if (name.includes("第13場勝隊")) target = safePlayoffResult(13, 'winner');
+    else if (name.includes("第10場敗隊")) target = safePlayoffResult(10, 'loser');
+    else if (name.includes("第11場敗隊")) target = safePlayoffResult(11, 'loser');
+    else if (name.includes("第12場敗隊")) target = safePlayoffResult(12, 'loser');
+    else if (name.includes("第13場敗隊")) target = safePlayoffResult(13, 'loser');
     
     // Prevent infinite loops and recursively resolve placeholders
     if (target !== name && target) return resolveTeamName(target, liveData); 
