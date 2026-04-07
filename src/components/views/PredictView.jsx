@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Medal, AlertCircle, Loader2, Crown, Trophy, Target, Crosshair } from "lucide-react";
 import { TEAM_LIST, MATCH_SCHEDULE } from "../../constants/data";
-import { CONFIG } from "../../constants/config";
 import { db } from "../../lib/firebase";
 import { ref, push, onValue, get, query, orderByChild, equalTo } from "firebase/database";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
@@ -20,8 +19,15 @@ export function PredictView() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [predictions, setPredictions] = useState([]);
     const [selectedPrediction, setSelectedPrediction] = useState(null);
+    const [isPredictionsPublic, setIsPredictionsPublic] = useState(false);
 
     useEffect(() => {
+        // Listen to global prediction visibility setting
+        const settingsRef = ref(db, 'settings/global/isPredictionsPublic');
+        const unsubSettings = onValue(settingsRef, (snapshot) => {
+            setIsPredictionsPublic(snapshot.val() === true);
+        });
+
         // Switch to new root for isolated schema
         const predictionsRef = ref(db, 'predictions_v2');
         const unsubscribe = onValue(predictionsRef, (snapshot) => {
@@ -37,7 +43,10 @@ export function PredictView() {
                 setPredictions([]);
             }
         });
-        return () => unsubscribe();
+        return () => {
+            unsubSettings();
+            unsubscribe();
+        };
     }, []);
 
     // ---- Auto-Settlement Logic ----
@@ -289,7 +298,7 @@ export function PredictView() {
                             return (
                                 <div key={p.id} 
                                     onClick={() => {
-                                        if (CONFIG.isPredictionsPublic) {
+                                        if (isPredictionsPublic) {
                                             setSelectedPrediction(p);
                                         } else {
                                             alert("賽事管理員尚未開放查看他人預測明細喔！🤫");
@@ -297,7 +306,7 @@ export function PredictView() {
                                     }}
                                     className={clsx(
                                     "bg-white p-4 rounded-xl shadow-sm border flex items-center justify-between relative group transition-all duration-500 overflow-hidden",
-                                    CONFIG.isPredictionsPublic ? "cursor-pointer hover:shadow-md" : "",
+                                    isPredictionsPublic ? "cursor-pointer hover:shadow-md" : "",
                                     isFirstPlace ? "border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] scale-[1.02] bg-gradient-to-br from-[#FFFBDF] to-white z-10" : "border-gray-100",
                                     (!isFirstPlace && maxScore > 0) ? "opacity-90" : ""
                                 )}>

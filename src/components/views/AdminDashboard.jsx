@@ -28,10 +28,19 @@ export function AdminDashboard() {
 
     useEffect(() => {
         // Simple client-side auth
-        if (authKey === "admin123") {
+        if (authKey === "admin2026") {
             setIsAuthenticated(true);
         }
     }, [authKey]);
+
+    const [isPublic, setIsPublic] = useState(false);
+
+    useEffect(() => {
+        const settingsRef = ref(db, "settings/global/isPredictionsPublic");
+        return onValue(settingsRef, (snapshot) => {
+            setIsPublic(snapshot.val() === true);
+        });
+    }, []);
 
     useEffect(() => {
         // Listen to all matches to show live status
@@ -139,7 +148,7 @@ export function AdminDashboard() {
                         placeholder="輸入管理密碼"
                         className="w-full p-2 border border-gray-300 rounded mb-2"
                         onChange={(e) => {
-                            if (e.target.value === "admin123") setIsAuthenticated(true);
+                            if (e.target.value === "admin2026") setIsAuthenticated(true);
                         }}
                     />
                 </div>
@@ -154,7 +163,27 @@ export function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
-            <h1 className="text-xl font-bold mb-4 text-center">🏐 裁判計分台</h1>
+            <h1 className="text-xl font-bold mb-4 text-center">🏐 管理後台</h1>
+
+            <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-8 flex flex-col gap-3 shadow-lg">
+                <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-200">英雄榜預測明細功能</span>
+                    <button 
+                        onClick={() => set(ref(db, "settings/global/isPredictionsPublic"), !isPublic)}
+                        className={clsx(
+                            "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800",
+                            isPublic ? "bg-indigo-500" : "bg-gray-600"
+                        )}
+                    >
+                        <span className={clsx("inline-block h-5 w-5 transform rounded-full bg-white transition-transform", isPublic ? "translate-x-6" : "translate-x-1")} />
+                    </button>
+                </div>
+                <div className={clsx("text-sm px-3 py-2 rounded flex items-center justify-center font-bold", isPublic ? "bg-indigo-900/50 text-indigo-300 border border-indigo-700/50" : "bg-gray-700 text-gray-400")}>
+                    目前狀態：{isPublic ? "已解鎖 (公開)" : "已鎖定 (隱藏)"}
+                </div>
+            </div>
+
+            <h2 className="text-lg font-bold mb-4 text-gray-300">裁判即時計分台</h2>
 
             {!activeMatchId ? (
                 <div className="space-y-3 pb-8">
