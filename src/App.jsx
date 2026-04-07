@@ -4,6 +4,7 @@ import { HomeView } from "./components/views/HomeView";
 import { ScheduleView } from "./components/views/ScheduleView";
 import { TeamListView } from "./components/views/TeamListView";
 import { TeamDetailView } from "./components/views/TeamDetailView";
+import { PredictView } from "./components/views/PredictView";
 
 import { BracketView } from "./components/views/BracketView";
 import { AdminDashboard } from "./components/views/AdminDashboard";
@@ -19,6 +20,7 @@ function App() {
             <Route path="/bracket" element={<BracketView />} />
             <Route path="/teams" element={<TeamListView />} />
             <Route path="/teams/:teamName" element={<TeamDetailView />} />
+            <Route path="/predict" element={<PredictView />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

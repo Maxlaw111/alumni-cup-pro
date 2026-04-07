@@ -1,4 +1,4 @@
-import { Home, Calendar, Trophy, Users } from "lucide-react";
+import { Home, Calendar, Trophy, Users, Sparkles } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 
@@ -12,6 +12,7 @@ export function Navigation() {
         { id: "/schedule", label: "賽程", icon: Calendar },
         { id: "/bracket", label: "戰績", icon: Trophy },
         { id: "/teams", label: "球隊", icon: Users },
+        { id: "/predict", label: "預測", icon: Sparkles },
     ];
 
     const isActive = (path) => {
@@ -28,7 +29,7 @@ export function Navigation() {
                         key={tab.id}
                         onClick={() => navigate(tab.id)}
                         className={clsx(
-                            "flex flex-col items-center gap-1 p-2 rounded-lg transition-all w-16",
+                            "flex flex-col items-center gap-1 p-2 rounded-lg transition-all flex-1",
                             isActive(tab.id)
                                 ? "text-primary font-bold"
                                 : "text-gray-500 hover:bg-gray-50"
