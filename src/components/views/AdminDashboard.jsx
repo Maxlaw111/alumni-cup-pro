@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { MATCH_SCHEDULE } from "../../constants/data";
 import { db } from "../../lib/firebase";
 import { ref, update, set, onValue } from "firebase/database";
+import { formatTeamNameUI } from "../../lib/teamResolver";
 import { clsx } from "clsx";
 
 const DEFAULT_MATCH_STATE = {
@@ -187,9 +188,9 @@ export function AdminDashboard() {
                                     {isFinished && <span className="text-green-500 text-xs font-bold">✓ 已結束</span>}
                                 </div>
                                 <div className="font-bold text-lg flex justify-between">
-                                    <span>{match.teamA}</span>
+                                    <span>{formatTeamNameUI(match.teamA, matchData)}</span>
                                     <span>vs</span>
-                                    <span>{match.teamB}</span>
+                                    <span>{formatTeamNameUI(match.teamB, matchData)}</span>
                                 </div>
                                 {mData?.sets && (
                                     <div className="mt-2 text-xs text-gray-500 flex justify-center gap-3">
@@ -219,7 +220,7 @@ export function AdminDashboard() {
                             <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded">{activeMatch.court}</span>
                             <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded">{activeMatch.type}</span>
                         </div>
-                        <div className="font-bold text-lg">{activeMatch.teamA} vs {activeMatch.teamB}</div>
+                        <div className="font-bold text-lg">{formatTeamNameUI(activeMatch.teamA, matchData)} vs {formatTeamNameUI(activeMatch.teamB, matchData)}</div>
                         
                         <div className="mt-3 flex justify-center items-center gap-4">
                             <div className="text-blue-400 font-bold text-xl">{currentData.setA} 勝</div>
@@ -235,7 +236,7 @@ export function AdminDashboard() {
                         {/* Team A */}
                         <div className={clsx("rounded-xl p-2 flex flex-col items-center border transition-all", 
                             currentData.isFinished ? "bg-gray-800/50 border-gray-700" : "bg-blue-900/20 border-blue-500/30")}>
-                            <div className="text-blue-300 font-bold mb-2 truncate w-full text-center text-sm">{activeMatch.teamA}</div>
+                            <div className="text-blue-300 font-bold mb-2 truncate w-full text-center text-sm">{formatTeamNameUI(activeMatch.teamA, matchData)}</div>
                             <div className="text-6xl font-mono font-bold mb-4">{activeScores.scoreA}</div>
                             {!currentData.isFinished && (
                                 <>
@@ -258,7 +259,7 @@ export function AdminDashboard() {
                         {/* Team B */}
                         <div className={clsx("rounded-xl p-2 flex flex-col items-center border transition-all", 
                             currentData.isFinished ? "bg-gray-800/50 border-gray-700" : "bg-red-900/20 border-red-500/30")}>
-                            <div className="text-red-300 font-bold mb-2 truncate w-full text-center text-sm">{activeMatch.teamB}</div>
+                            <div className="text-red-300 font-bold mb-2 truncate w-full text-center text-sm">{formatTeamNameUI(activeMatch.teamB, matchData)}</div>
                             <div className="text-6xl font-mono font-bold mb-4">{activeScores.scoreB}</div>
                             {!currentData.isFinished && (
                                 <>

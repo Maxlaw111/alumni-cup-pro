@@ -1,48 +1,18 @@
 import { MATCH_SCHEDULE } from "../../constants/data";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
+import { getMatchResult, resolveTeamName } from "../../lib/teamResolver";
 import { clsx } from "clsx";
 
 export function BracketView() {
     const liveData = useLiveMatches();
 
-    const getMatchResult = (matchId) => {
-        const data = liveData[matchId];
-        const match = MATCH_SCHEDULE.find(m => m.id === matchId);
-        if (!data || !match) return { winner: null, loser: null, isFinished: false, isLive: false, setA: 0, setB: 0 };
-        
-        let winner = null;
-        let loser = null;
-        if (data.isFinished) {
-            if (data.setA > data.setB) {
-                winner = match.teamA;
-                loser = match.teamB;
-            } else {
-                winner = match.teamB;
-                loser = match.teamA;
-            }
-        }
-        return { winner, loser, isFinished: data.isFinished, isLive: data.isLive, setA: data.setA || 0, setB: data.setB || 0 };
-    };
-
-    const resolveTeamName = (originalName) => {
-        if (originalName.includes("第10場勝隊")) return getMatchResult(10).winner || originalName;
-        if (originalName.includes("第11場勝隊")) return getMatchResult(11).winner || originalName;
-        if (originalName.includes("第10場敗隊")) return getMatchResult(10).loser || originalName;
-        if (originalName.includes("第11場敗隊")) return getMatchResult(11).loser || originalName;
-        if (originalName.includes("第12場勝隊")) return getMatchResult(12).winner || originalName;
-        if (originalName.includes("第13場勝隊")) return getMatchResult(13).winner || originalName;
-        if (originalName.includes("第12場敗隊")) return getMatchResult(12).loser || originalName;
-        if (originalName.includes("第13場敗隊")) return getMatchResult(13).loser || originalName;
-        return originalName;
-    };
-
     const BracketCard = ({ matchId, title, highlight = "default" }) => {
         const match = MATCH_SCHEDULE.find(m => m.id === matchId);
         if (!match) return null;
 
-        const result = getMatchResult(matchId);
-        const resolvedTeamA = resolveTeamName(match.teamA);
-        const resolvedTeamB = resolveTeamName(match.teamB);
+        const result = getMatchResult(matchId, liveData);
+        const resolvedTeamA = resolveTeamName(match.teamA, liveData);
+        const resolvedTeamB = resolveTeamName(match.teamB, liveData);
 
         const isTeamAWinner = result.winner === match.teamA;
         const isTeamBWinner = result.winner === match.teamB;

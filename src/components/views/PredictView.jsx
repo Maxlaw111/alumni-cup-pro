@@ -4,6 +4,7 @@ import { TEAM_LIST, MATCH_SCHEDULE, GROUPS } from "../../constants/data";
 import { db } from "../../lib/firebase";
 import { ref, push, onValue } from "firebase/database";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
+import { getMatchResult, resolveTeamName } from "../../lib/teamResolver";
 import clsx from "clsx";
 
 export function PredictView() {
@@ -38,81 +39,6 @@ export function PredictView() {
     }, []);
 
     // ---- Auto-Settlement Logic ----
-    const getStandings = (groupName) => {
-        const groupTeams = groupName === "A組" ? GROUPS.A : GROUPS.B;
-        const stats = {};
-        groupTeams.forEach(team => {
-            stats[team] = { name: team, matchWins: 0, setsWon: 0, setsLost: 0, pointsWon: 0, pointsLost: 0 };
-        });
-
-        const groupMatches = MATCH_SCHEDULE.filter(m => m.type.includes(groupName));
-        groupMatches.forEach(match => {
-            const mData = liveData[match.id];
-            if (!mData) return;
-            const tA = match.teamA; const tB = match.teamB;
-            if (!stats[tA] || !stats[tB]) return;
-
-            const setA = mData.setA || 0; const setB = mData.setB || 0;
-            if (mData.isFinished) {
-                if (setA > setB) stats[tA].matchWins++;
-                else if (setB > setA) stats[tB].matchWins++;
-            }
-            stats[tA].setsWon += setA; stats[tA].setsLost += setB;
-            stats[tB].setsWon += setB; stats[tB].setsLost += setA;
-
-            if (mData.sets) {
-                mData.sets.forEach(s => {
-                    stats[tA].pointsWon += (s.scoreA || 0); stats[tA].pointsLost += (s.scoreB || 0);
-                    stats[tB].pointsWon += (s.scoreB || 0); stats[tB].pointsLost += (s.scoreA || 0);
-                });
-            }
-        });
-
-        return Object.values(stats).sort((a, b) => {
-            if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
-            const aSet = a.setsWon - a.setsLost; const bSet = b.setsWon - b.setsLost;
-            if (aSet !== bSet) return bSet - aSet;
-            return (b.pointsWon - b.pointsLost) - (a.pointsWon - a.pointsLost);
-        });
-    };
-
-    const getMatchResult = (matchId) => {
-        const data = liveData[matchId];
-        const match = MATCH_SCHEDULE.find(m => m.id === matchId);
-        if (!data || !match) return { winner: null, loser: null, isFinished: false };
-        
-        let winner = null; let loser = null;
-        if (data.isFinished) {
-            if (data.setA > data.setB) { winner = match.teamA; loser = match.teamB; }
-            else { winner = match.teamB; loser = match.teamA; }
-        }
-        return { winner, loser, isFinished: data.isFinished };
-    };
-
-    const resolveTeamName = (name) => {
-        if (!name) return name;
-        if (name.includes("A組第一")) return getStandings("A組")[0]?.name || name;
-        if (name.includes("A組第二")) return getStandings("A組")[1]?.name || name;
-        if (name.includes("A組第三")) return getStandings("A組")[2]?.name || name;
-        if (name.includes("B組第一")) return getStandings("B組")[0]?.name || name;
-        if (name.includes("B組第二")) return getStandings("B組")[1]?.name || name;
-        if (name.includes("B組第三")) return getStandings("B組")[2]?.name || name;
-        
-        let target = name;
-        if (name.includes("第10場勝隊")) target = getMatchResult(10).winner || name;
-        else if (name.includes("第11場勝隊")) target = getMatchResult(11).winner || name;
-        else if (name.includes("第12場勝隊")) target = getMatchResult(12).winner || name;
-        else if (name.includes("第13場勝隊")) target = getMatchResult(13).winner || name;
-        else if (name.includes("第10場敗隊")) target = getMatchResult(10).loser || name;
-        else if (name.includes("第11場敗隊")) target = getMatchResult(11).loser || name;
-        else if (name.includes("第12場敗隊")) target = getMatchResult(12).loser || name;
-        else if (name.includes("第13場敗隊")) target = getMatchResult(13).loser || name;
-        
-        // Prevent infinite loops and recursively resolve placeholders
-        if (target !== name && target) return resolveTeamName(target); 
-        return target;
-    };
-
     const m14Data = liveData[14];
     const m15Data = liveData[15];
     const isTournamentFinished = m14Data?.isFinished && m15Data?.isFinished;
@@ -122,11 +48,11 @@ export function PredictView() {
     let realThird = null;
 
     if (isTournamentFinished) {
-        const m14Result = getMatchResult(14);
-        const m15Result = getMatchResult(15);
-        realFirst = resolveTeamName(m14Result.winner);
-        realSecond = resolveTeamName(m14Result.loser);
-        realThird = resolveTeamName(m15Result.winner);
+        const m14Result = getMatchResult(14, liveData);
+        const m15Result = getMatchResult(15, liveData);
+        realFirst = resolveTeamName(m14Result.winner, liveData);
+        realSecond = resolveTeamName(m14Result.loser, liveData);
+        realThird = resolveTeamName(m15Result.winner, liveData);
     }
 
     let scoredPredictions = predictions.map(p => {

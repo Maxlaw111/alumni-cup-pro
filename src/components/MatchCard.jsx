@@ -1,12 +1,16 @@
 import { clsx } from 'clsx';
 import { cn } from '../lib/utils';
 
+import { useLiveMatches } from '../hooks/useLiveMatches';
+import { formatTeamNameUI } from '../lib/teamResolver';
+
 /**
  * @param {Object} props
  * @param {Object} props.match
  * @param {boolean} props.isLive // Deprecated flag, using dynamic state from live data
  */
 export function MatchCard({ match }) {
+    const liveData = useLiveMatches();
     // Determine the state from match if injected via useLiveMatches
     const isLive = match.isLive || false;
     const isFinished = match.isFinished || false;
@@ -60,7 +64,7 @@ export function MatchCard({ match }) {
                         </div>
                         <div className="flex flex-col">
                             <span className={cn("font-bold text-lg leading-tight", currentScoreA > currentScoreB ? "text-gray-900" : "text-gray-600")}>
-                                {match.teamA || '未定'}
+                                {formatTeamNameUI(match.teamA, liveData) || '未定'}
                             </span>
                             {setA > 0 && <span className="text-amber-500 text-[10px] font-bold">★ 取得 {setA} 勝</span>}
                         </div>
@@ -84,7 +88,7 @@ export function MatchCard({ match }) {
                         </div>
                         <div className="flex flex-col">
                             <span className={cn("font-bold text-lg leading-tight", currentScoreB > currentScoreA ? "text-gray-900" : "text-gray-600")}>
-                                {match.teamB || '未定'}
+                                {formatTeamNameUI(match.teamB, liveData) || '未定'}
                             </span>
                             {setB > 0 && <span className="text-amber-500 text-[10px] font-bold">★ 取得 {setB} 勝</span>}
                         </div>
