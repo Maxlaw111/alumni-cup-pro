@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Sparkles, Medal, AlertCircle, Loader2, Crown, Trophy, Target, Crosshair } from "lucide-react";
 import { TEAM_LIST, MATCH_SCHEDULE } from "../../constants/data";
 import { db } from "../../lib/firebase";
-import { ref, push, onValue } from "firebase/database";
+import { ref, push, onValue, get, query, orderByChild, equalTo } from "firebase/database";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
 import { getMatchResult, resolveTeamName } from "../../lib/teamResolver";
 import clsx from "clsx";
@@ -98,8 +98,19 @@ export function PredictView() {
 
         setIsSubmitting(true);
         try {
+            const trimmedName = realName.trim();
+            
+            // 資料庫前置查詢 (Pre-check)
+            const nameQuery = query(ref(db, 'predictions_v2'), orderByChild('realName'), equalTo(trimmedName));
+            const snapshot = await get(nameQuery);
+            if (snapshot.exists()) {
+                setError(`🚨 哎呀！『${trimmedName}』已經送出過預測囉！每人限參加一次，買定離手！`);
+                setIsSubmitting(false);
+                return;
+            }
+
             await push(ref(db, 'predictions_v2'), {
-                realName: realName.trim(),
+                realName: trimmedName,
                 guesses,
                 timestamp: Date.now()
             });
