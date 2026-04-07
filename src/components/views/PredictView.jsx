@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Medal, AlertCircle, Loader2, Crown, Trophy, Target, Crosshair } from "lucide-react";
 import { TEAM_LIST, MATCH_SCHEDULE } from "../../constants/data";
+import { CONFIG } from "../../constants/config";
 import { db } from "../../lib/firebase";
 import { ref, push, onValue, get, query, orderByChild, equalTo } from "firebase/database";
 import { useLiveMatches } from "../../hooks/useLiveMatches";
@@ -18,6 +19,7 @@ export function PredictView() {
     const [success, setSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [predictions, setPredictions] = useState([]);
+    const [selectedPrediction, setSelectedPrediction] = useState(null);
 
     useEffect(() => {
         // Switch to new root for isolated schema
@@ -285,8 +287,17 @@ export function PredictView() {
                             const rankNum = index + 1;
 
                             return (
-                                <div key={p.id} className={clsx(
+                                <div key={p.id} 
+                                    onClick={() => {
+                                        if (CONFIG.isPredictionsPublic) {
+                                            setSelectedPrediction(p);
+                                        } else {
+                                            alert("賽事管理員尚未開放查看他人預測明細喔！🤫");
+                                        }
+                                    }}
+                                    className={clsx(
                                     "bg-white p-4 rounded-xl shadow-sm border flex items-center justify-between relative group transition-all duration-500 overflow-hidden",
+                                    CONFIG.isPredictionsPublic ? "cursor-pointer hover:shadow-md" : "",
                                     isFirstPlace ? "border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] scale-[1.02] bg-gradient-to-br from-[#FFFBDF] to-white z-10" : "border-gray-100",
                                     (!isFirstPlace && maxScore > 0) ? "opacity-90" : ""
                                 )}>
@@ -335,6 +346,53 @@ export function PredictView() {
                     大會自動結算系統 v2.0
                 </div>
             </div>
+
+            {selectedPrediction && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedPrediction(null)}>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex justify-between items-center">
+                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                <Sparkles size={18} />
+                                {selectedPrediction.realName} 的預測明細
+                            </h3>
+                            <button onClick={() => setSelectedPrediction(null)} className="p-1 hover:bg-white/20 rounded-full transition-colors leading-none pb-1.5 focus:outline-none">
+                                ✕
+                            </button>
+                        </div>
+                        <div className="p-4 max-h-[70vh] overflow-y-auto space-y-3">
+                            {MATCH_SCHEDULE.map(match => {
+                                const predictedTeam = selectedPrediction.guesses[match.id];
+                                const matchData = liveData[match.id];
+                                const isFinished = matchData?.isFinished;
+                                let resultIcon = null;
+                                
+                                if (isFinished) {
+                                    const result = getMatchResult(match.id, liveData);
+                                    const trueWinner = resolveTeamName(result.winner, liveData);
+                                    if (predictedTeam === trueWinner) {
+                                        resultIcon = <span className="text-green-600 font-bold ml-2">✓ 命中</span>;
+                                    } else {
+                                        resultIcon = <span className="text-red-500 font-bold ml-2">✗ 失敗 (勝:{trueWinner || "未宣判"})</span>;
+                                    }
+                                }
+
+                                return (
+                                    <div key={match.id} className="flex justify-between items-center p-3 rounded-lg border border-gray-100 bg-gray-50 flex-col sm:flex-row gap-2">
+                                        <div className="flex flex-col w-full sm:w-auto">
+                                            <span className="text-xs text-gray-500 font-bold">M{match.id} {match.type}</span>
+                                            <span className="text-sm font-medium text-gray-800 break-words">{match.teamA} <span className="text-gray-400 font-normal px-1">vs</span> {match.teamB}</span>
+                                        </div>
+                                        <div className="flex flex-col items-start sm:items-end w-full sm:w-auto bg-white sm:bg-transparent p-2 sm:p-0 rounded border sm:border-0 border-gray-200">
+                                            <span className="text-sm font-bold text-purple-700">{predictedTeam || "未預測"}</span>
+                                            {resultIcon && <span className="text-xs mt-1">{resultIcon}</span>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
