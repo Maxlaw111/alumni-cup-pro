@@ -1,4 +1,4 @@
-import { Home, Calendar, Trophy, Users, Sparkles } from "lucide-react";
+import { Home, Calendar, Trophy, Users, Sparkles, Zap } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 
@@ -12,6 +12,7 @@ export function Navigation() {
         { id: "/schedule", label: "賽程", icon: Calendar },
         { id: "/bracket", label: "戰績", icon: Trophy },
         { id: "/teams", label: "球隊", icon: Users },
+        { id: "/analysis", label: "分析", icon: Zap },
         { id: "/predict", label: "預測", icon: Sparkles },
     ];
 

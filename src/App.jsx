@@ -8,6 +8,7 @@ import { PredictView } from "./components/views/PredictView";
 
 import { BracketView } from "./components/views/BracketView";
 import { AdminDashboard } from "./components/views/AdminDashboard";
+import { TeamProfilesView } from "./components/views/TeamProfilesView";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/teams" element={<TeamListView />} />
             <Route path="/teams/:teamName" element={<TeamDetailView />} />
             <Route path="/predict" element={<PredictView />} />
+            <Route path="/analysis" element={<TeamProfilesView />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
