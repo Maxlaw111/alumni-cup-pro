@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MATCH_SCHEDULE } from "../../constants/data";
 import { db } from "../../lib/firebase";
-import { ref, update, set, onValue } from "firebase/database";
-import { formatTeamNameUI } from "../../lib/teamResolver";
+import { ref, update, set, onValue, remove } from "firebase/database";
+import { formatTeamNameUI, getMatchResult, resolveTeamName } from "../../lib/teamResolver";
 import { clsx } from "clsx";
 
 const DEFAULT_MATCH_STATE = {
@@ -25,6 +25,60 @@ export function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeMatchId, setActiveMatchId] = useState(null);
     const [matchData, setMatchData] = useState({});
+    const [predictions, setPredictions] = useState([]);
+
+    useEffect(() => {
+        const predictionsRef = ref(db, 'predictions_v2');
+        return onValue(predictionsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const list = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                }));
+                setPredictions(list.filter(p => p.guesses && p.realName));
+            } else {
+                setPredictions([]);
+            }
+        });
+    }, []);
+
+    let scoredPredictions = predictions.map(p => {
+        let score = 0;
+        let hits = 0;
+        let totalFinished = 0;
+        
+        for (let i = 1; i <= 15; i++) {
+            const mData = matchData[i];
+            if (mData && mData.isFinished) {
+                totalFinished++;
+                const result = getMatchResult(i, matchData);
+                const trueWinner = resolveTeamName(result.winner, matchData);
+                
+                if (p.guesses[i] === trueWinner) {
+                    hits++;
+                    score += (i >= 12 ? 2 : 1);
+                }
+            }
+        }
+        return { ...p, score, hits, totalFinished };
+    });
+
+    scoredPredictions.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.timestamp - b.timestamp; 
+    });
+
+    const handleDeletePrediction = async (id, name) => {
+        if (window.confirm(`確定要刪除 ${name} 的這筆預測紀錄嗎？此動作無法復原。`)) {
+            try {
+                await remove(ref(db, `predictions_v2/${id}`));
+            } catch (e) {
+                console.error(e);
+                window.alert("刪除失敗");
+            }
+        }
+    };
 
     useEffect(() => {
         // Simple client-side auth
@@ -181,6 +235,47 @@ export function AdminDashboard() {
                 <div className={clsx("text-sm px-3 py-2 rounded flex items-center justify-center font-bold", isPublic ? "bg-indigo-900/50 text-indigo-300 border border-indigo-700/50" : "bg-gray-700 text-gray-400")}>
                     目前狀態：{isPublic ? "已解鎖 (公開)" : "已鎖定 (隱藏)"}
                 </div>
+            </div>
+
+            <h2 className="text-lg font-bold mb-4 text-gray-300">預測紀錄管理 (共 {scoredPredictions.length} 筆)</h2>
+            <div className="space-y-3 mb-8">
+                {scoredPredictions.map((p, index) => (
+                    <div key={p.id} className="bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-700 flex items-center justify-between relative group">
+                        <div className="flex items-center gap-3">
+                            <span className="font-black text-xl w-6 text-center text-gray-400">{index + 1}</span>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-gray-200 text-lg">
+                                    {p.realName}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                    {new Date(p.timestamp).toLocaleString()} 送出
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-end gap-1">
+                                <span className="text-sm font-black rounded-lg border border-indigo-700 bg-indigo-900/40 text-indigo-300 px-2 py-1 flex items-center gap-1">
+                                    ✨ {p.score} 分
+                                </span>
+                                {p.totalFinished > 0 && (
+                                    <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">
+                                        命中: {p.hits} / {p.totalFinished} 場 
+                                    </span>
+                                )}
+                            </div>
+                            
+                            <button 
+                                onClick={() => handleDeletePrediction(p.id, p.realName)}
+                                className="bg-red-900/50 hover:bg-red-600 text-red-300 hover:text-white border border-red-700/50 px-3 py-2 rounded-lg flex items-center gap-1 transition-all active:scale-95 text-sm"
+                                title="刪除"
+                            >
+                                🗑️ 刪除
+                            </button>
+                        </div>
+                    </div>
+                ))}
+                {scoredPredictions.length === 0 && <div className="text-gray-500 text-sm">目前沒有預測紀錄</div>}
             </div>
 
             <h2 className="text-lg font-bold mb-4 text-gray-300">裁判即時計分台</h2>
