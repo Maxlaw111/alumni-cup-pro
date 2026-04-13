@@ -217,71 +217,12 @@ export function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 pb-24">
-            <h1 className="text-xl font-bold mb-4 text-center">🏐 管理後台</h1>
-
-            <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-8 flex flex-col gap-3 shadow-lg">
-                <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-200">英雄榜預測明細功能</span>
-                    <button 
-                        onClick={() => set(ref(db, "settings/global/isPredictionsPublic"), !isPublic)}
-                        className={clsx(
-                            "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800",
-                            isPublic ? "bg-indigo-500" : "bg-gray-600"
-                        )}
-                    >
-                        <span className={clsx("inline-block h-5 w-5 transform rounded-full bg-white transition-transform", isPublic ? "translate-x-6" : "translate-x-1")} />
-                    </button>
-                </div>
-                <div className={clsx("text-sm px-3 py-2 rounded flex items-center justify-center font-bold", isPublic ? "bg-indigo-900/50 text-indigo-300 border border-indigo-700/50" : "bg-gray-700 text-gray-400")}>
-                    目前狀態：{isPublic ? "已解鎖 (公開)" : "已鎖定 (隱藏)"}
-                </div>
-            </div>
-
-            <h2 className="text-lg font-bold mb-4 text-gray-300">預測紀錄管理 (共 {scoredPredictions.length} 筆)</h2>
-            <div className="space-y-3 mb-8">
-                {scoredPredictions.map((p, index) => (
-                    <div key={p.id} className="bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-700 flex items-center justify-between relative group">
-                        <div className="flex items-center gap-3">
-                            <span className="font-black text-xl w-6 text-center text-gray-400">{index + 1}</span>
-                            <div className="flex flex-col">
-                                <span className="font-bold text-gray-200 text-lg">
-                                    {p.realName}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                    {new Date(p.timestamp).toLocaleString()} 送出
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="flex flex-col items-end gap-1">
-                                <span className="text-sm font-black rounded-lg border border-indigo-700 bg-indigo-900/40 text-indigo-300 px-2 py-1 flex items-center gap-1">
-                                    ✨ {p.score} 分
-                                </span>
-                                {p.totalFinished > 0 && (
-                                    <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">
-                                        命中: {p.hits} / {p.totalFinished} 場 
-                                    </span>
-                                )}
-                            </div>
-                            
-                            <button 
-                                onClick={() => handleDeletePrediction(p.id, p.realName)}
-                                className="bg-red-900/50 hover:bg-red-600 text-red-300 hover:text-white border border-red-700/50 px-3 py-2 rounded-lg flex items-center gap-1 transition-all active:scale-95 text-sm"
-                                title="刪除"
-                            >
-                                🗑️ 刪除
-                            </button>
-                        </div>
-                    </div>
-                ))}
-                {scoredPredictions.length === 0 && <div className="text-gray-500 text-sm">目前沒有預測紀錄</div>}
-            </div>
+            <h1 className="text-xl font-bold mb-8 text-center">🏐 管理後台</h1>
 
             <h2 className="text-lg font-bold mb-4 text-gray-300">裁判即時計分台</h2>
 
             {!activeMatchId ? (
-                <div className="space-y-3 pb-8">
+                <div className="space-y-3 pb-8 mb-4 border-b border-gray-800">
                     <button 
                         onClick={handleResetAll}
                         className="w-full bg-red-700 hover:bg-red-600 border border-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg mb-6 flex justify-center items-center gap-2 transform transition active:scale-95"
@@ -331,7 +272,7 @@ export function AdminDashboard() {
                     })}
                 </div>
             ) : (
-                <div className="h-full flex flex-col">
+                <div className="h-full flex flex-col mb-12">
                     <button
                         onClick={() => setActiveMatchId(null)}
                         className="mb-4 text-gray-400 text-sm flex items-center gap-1 hover:text-white"
@@ -424,6 +365,65 @@ export function AdminDashboard() {
                     </div>
                 </div>
             )}
+
+            <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-8 flex flex-col gap-3 shadow-lg">
+                <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-200">英雄榜預測明細功能</span>
+                    <button 
+                        onClick={() => set(ref(db, "settings/global/isPredictionsPublic"), !isPublic)}
+                        className={clsx(
+                            "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800",
+                            isPublic ? "bg-indigo-500" : "bg-gray-600"
+                        )}
+                    >
+                        <span className={clsx("inline-block h-5 w-5 transform rounded-full bg-white transition-transform", isPublic ? "translate-x-6" : "translate-x-1")} />
+                    </button>
+                </div>
+                <div className={clsx("text-sm px-3 py-2 rounded flex items-center justify-center font-bold", isPublic ? "bg-indigo-900/50 text-indigo-300 border border-indigo-700/50" : "bg-gray-700 text-gray-400")}>
+                    目前狀態：{isPublic ? "已解鎖 (公開)" : "已鎖定 (隱藏)"}
+                </div>
+            </div>
+
+            <h2 className="text-lg font-bold mb-4 text-gray-300">預測紀錄管理 (共 {scoredPredictions.length} 筆)</h2>
+            <div className="space-y-3 mb-8">
+                {scoredPredictions.map((p, index) => (
+                    <div key={p.id} className="bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-700 flex items-center justify-between relative group">
+                        <div className="flex items-center gap-3">
+                            <span className="font-black text-xl w-6 text-center text-gray-400">{index + 1}</span>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-gray-200 text-lg">
+                                    {p.realName}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                    {new Date(p.timestamp).toLocaleString()} 送出
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-end gap-1">
+                                <span className="text-sm font-black rounded-lg border border-indigo-700 bg-indigo-900/40 text-indigo-300 px-2 py-1 flex items-center gap-1">
+                                    ✨ {p.score} 分
+                                </span>
+                                {p.totalFinished > 0 && (
+                                    <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">
+                                        命中: {p.hits} / {p.totalFinished} 場 
+                                    </span>
+                                )}
+                            </div>
+                            
+                            <button 
+                                onClick={() => handleDeletePrediction(p.id, p.realName)}
+                                className="bg-red-900/50 hover:bg-red-600 text-red-300 hover:text-white border border-red-700/50 px-3 py-2 rounded-lg flex items-center gap-1 transition-all active:scale-95 text-sm"
+                                title="刪除"
+                            >
+                                🗑️ 刪除
+                            </button>
+                        </div>
+                    </div>
+                ))}
+                {scoredPredictions.length === 0 && <div className="text-gray-500 text-sm">目前沒有預測紀錄</div>}
+            </div>
         </div>
     );
 }
