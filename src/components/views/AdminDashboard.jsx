@@ -90,11 +90,20 @@ export function AdminDashboard() {
     }, [authKey]);
 
     const [isPublic, setIsPublic] = useState(false);
+    const [isPredictionEnabled, setIsPredictionEnabled] = useState(true);
 
     useEffect(() => {
         const settingsRef = ref(db, "settings/global/isPredictionsPublic");
         return onValue(settingsRef, (snapshot) => {
             setIsPublic(snapshot.val() === true);
+        });
+    }, []);
+
+    useEffect(() => {
+        const enableRef = ref(db, "settings/isPredictionEnabled");
+        return onValue(enableRef, (snapshot) => {
+            const val = snapshot.val();
+            setIsPredictionEnabled(val === null ? true : val === true);
         });
     }, []);
 
@@ -372,6 +381,24 @@ export function AdminDashboard() {
 
             {userRole === "admin" && (
                 <>
+                    <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-4 flex flex-col gap-3 shadow-lg">
+                        <div className="flex justify-between items-center">
+                            <span className="font-bold text-gray-200">開放/關閉預測表單 (上帝開關)</span>
+                            <button 
+                                onClick={() => set(ref(db, "settings/isPredictionEnabled"), !isPredictionEnabled)}
+                                className={clsx(
+                                    "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800",
+                                    isPredictionEnabled ? "bg-green-500" : "bg-red-600"
+                                )}
+                            >
+                                <span className={clsx("inline-block h-5 w-5 transform rounded-full bg-white transition-transform", isPredictionEnabled ? "translate-x-6" : "translate-x-1")} />
+                            </button>
+                        </div>
+                        <div className={clsx("text-sm px-3 py-2 rounded flex items-center justify-center font-bold", isPredictionEnabled ? "bg-green-900/50 text-green-300 border border-green-700/50" : "bg-red-900/50 text-red-300 border border-red-700/50")}>
+                            目前狀態：{isPredictionEnabled ? "已開放 (接收表單中)" : "已關閉 (停止預測)"}
+                        </div>
+                    </div>
+
                     <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-8 flex flex-col gap-3 shadow-lg">
                         <div className="flex justify-between items-center">
                             <span className="font-bold text-gray-200">英雄榜預測明細功能</span>

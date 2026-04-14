@@ -20,12 +20,20 @@ export function PredictView() {
     const [predictions, setPredictions] = useState([]);
     const [selectedPrediction, setSelectedPrediction] = useState(null);
     const [isPredictionsPublic, setIsPredictionsPublic] = useState(false);
+    const [isPredictionEnabled, setIsPredictionEnabled] = useState(true);
 
     useEffect(() => {
         // Listen to global prediction visibility setting
         const settingsRef = ref(db, 'settings/global/isPredictionsPublic');
         const unsubSettings = onValue(settingsRef, (snapshot) => {
             setIsPredictionsPublic(snapshot.val() === true);
+        });
+
+        // Listen to global prediction enabled setting
+        const enableRef = ref(db, 'settings/isPredictionEnabled');
+        const unsubEnable = onValue(enableRef, (snapshot) => {
+            const val = snapshot.val();
+            setIsPredictionEnabled(val === null ? true : val === true);
         });
 
         // Switch to new root for isolated schema
@@ -45,6 +53,7 @@ export function PredictView() {
         });
         return () => {
             unsubSettings();
+            unsubEnable();
             unsubscribe();
         };
     }, []);
@@ -166,118 +175,129 @@ export function PredictView() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1 mb-8 relative">
-                {hasAnyMatchStarted && (
-                    <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center">
-                         <div className="bg-gray-900/90 text-white px-6 py-4 rounded-xl shadow-2xl font-bold backdrop-blur-md flex flex-col items-center gap-2">
-                            <AlertCircle size={32} className="text-amber-400 mb-1" />
-                            首場賽事已鳴哨開打
-                            <span className="text-sm font-normal text-gray-300 border-t border-gray-700 pt-2 mt-1">本預測系統已關閉填寫</span>
-                         </div>
+            {!isPredictionEnabled ? (
+                <div className="bg-white/30 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/50 p-10 mb-8 mx-2 text-center flex flex-col items-center justify-center relative overflow-hidden transition-all duration-500 hover:bg-white/40">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/20 to-transparent pointer-events-none z-0"></div>
+                    <div className="bg-gray-900/5 p-4 rounded-full mb-4 z-10 backdrop-blur-sm shadow-inner">
+                        <AlertCircle size={40} className="text-indigo-600 animate-pulse" />
                     </div>
-                )}
-                
-                <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                    <Crown size={20} className="text-purple-600" />
-                    <h2 className="text-lg font-bold text-gray-800">競猜表單</h2>
+                    <h2 className="text-2xl font-black text-gray-800 drop-shadow-md tracking-wider z-10 mb-2">預測已截止，比賽進行中！</h2>
+                    <p className="text-gray-600 font-bold z-10 text-lg bg-white/50 px-4 py-1 rounded-full shadow-sm">請鎖定即時計分榜。</p>
                 </div>
-                
-                {error && (
-                    <div className="m-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
-                        <AlertCircle size={16} />
-                        {error}
-                    </div>
-                )}
-                
-                {success && (
-                    <div className="m-4 p-4 bg-green-50 text-green-700 text-sm font-bold rounded-lg flex flex-col items-center gap-2 border border-green-200">
-                        <Trophy size={32} className="text-green-500 mb-1" />
-                        太準了！您已成功繳交終極預測名單！
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="p-4 space-y-6">
-                    <div>
-                        <label className="block text-sm font-bold text-gray-800 mb-2">真實姓名 <span className="text-red-500">*</span></label>
-                        <input
-                            type="text"
-                            value={realName}
-                            onChange={(e) => setRealName(e.target.value)}
-                            placeholder="請填寫您的全名以利賽後對獎"
-                            className="w-full border-gray-300 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] px-4 py-3 border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors outline-none font-medium"
-                        />
-                    </div>
-
-                    <div className="border border-green-100 bg-green-50/30 rounded-xl overflow-hidden">
-                        <div className="bg-green-100/50 px-4 py-2 border-b border-green-100">
-                            <h3 className="font-bold text-green-800 text-sm flex items-center gap-2">
-                                🏐 小組預賽區 (M1~M9)
-                                <span className="bg-green-200 text-green-700 text-[10px] px-2 py-0.5 rounded-full">每場 1 分</span>
-                            </h3>
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1 mb-8 relative">
+                    {hasAnyMatchStarted && (
+                        <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center">
+                             <div className="bg-gray-900/90 text-white px-6 py-4 rounded-xl shadow-2xl font-bold backdrop-blur-md flex flex-col items-center gap-2">
+                                <AlertCircle size={32} className="text-amber-400 mb-1" />
+                                首場賽事已鳴哨開打
+                                <span className="text-sm font-normal text-gray-300 border-t border-gray-700 pt-2 mt-1">本預測系統已關閉填寫</span>
+                             </div>
                         </div>
-                        <div className="p-4 space-y-3">
-                            {groupMatches.map(match => (
-                                <div key={match.id} className="bg-white p-3 rounded-lg border border-green-50 shadow-sm flex flex-col gap-2">
-                                    <div className="flex justify-between items-center text-xs text-gray-500">
-                                        <span className="font-bold text-indigo-500 bg-indigo-50 px-2 rounded">M{match.id}</span>
-                                        <span>{match.type}</span>
+                    )}
+                    
+                    <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+                        <Crown size={20} className="text-purple-600" />
+                        <h2 className="text-lg font-bold text-gray-800">競猜表單</h2>
+                    </div>
+                    
+                    {error && (
+                        <div className="m-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                            <AlertCircle size={16} />
+                            {error}
+                        </div>
+                    )}
+                    
+                    {success && (
+                        <div className="m-4 p-4 bg-green-50 text-green-700 text-sm font-bold rounded-lg flex flex-col items-center gap-2 border border-green-200">
+                            <Trophy size={32} className="text-green-500 mb-1" />
+                            太準了！您已成功繳交終極預測名單！
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="p-4 space-y-6">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-800 mb-2">真實姓名 <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                value={realName}
+                                onChange={(e) => setRealName(e.target.value)}
+                                placeholder="請填寫您的全名以利賽後對獎"
+                                className="w-full border-gray-300 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] px-4 py-3 border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50 focus:bg-white transition-colors outline-none font-medium"
+                            />
+                        </div>
+
+                        <div className="border border-green-100 bg-green-50/30 rounded-xl overflow-hidden">
+                            <div className="bg-green-100/50 px-4 py-2 border-b border-green-100">
+                                <h3 className="font-bold text-green-800 text-sm flex items-center gap-2">
+                                    🏐 小組預賽區 (M1~M9)
+                                    <span className="bg-green-200 text-green-700 text-[10px] px-2 py-0.5 rounded-full">每場 1 分</span>
+                                </h3>
+                            </div>
+                            <div className="p-4 space-y-3">
+                                {groupMatches.map(match => (
+                                    <div key={match.id} className="bg-white p-3 rounded-lg border border-green-50 shadow-sm flex flex-col gap-2">
+                                        <div className="flex justify-between items-center text-xs text-gray-500">
+                                            <span className="font-bold text-indigo-500 bg-indigo-50 px-2 rounded">M{match.id}</span>
+                                            <span>{match.type}</span>
+                                        </div>
+                                        <select 
+                                            value={guesses[match.id] || ""} 
+                                            onChange={(e) => handleGuessChange(match.id, e.target.value)}
+                                            className="w-full border-gray-200 rounded-md px-3 py-2 border focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gray-50 focus:bg-white outline-none appearance-none text-sm font-medium text-gray-800"
+                                        >
+                                            <option value="">-- 請預測勝隊 --</option>
+                                            <option value={match.teamA}>{match.teamA}</option>
+                                            <option value={match.teamB}>{match.teamB}</option>
+                                        </select>
                                     </div>
-                                    <select 
-                                        value={guesses[match.id] || ""} 
-                                        onChange={(e) => handleGuessChange(match.id, e.target.value)}
-                                        className="w-full border-gray-200 rounded-md px-3 py-2 border focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gray-50 focus:bg-white outline-none appearance-none text-sm font-medium text-gray-800"
-                                    >
-                                        <option value="">-- 請預測勝隊 --</option>
-                                        <option value={match.teamA}>{match.teamA}</option>
-                                        <option value={match.teamB}>{match.teamB}</option>
-                                    </select>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="border border-amber-100 bg-amber-50/30 rounded-xl overflow-hidden">
-                        <div className="bg-gradient-to-r from-amber-100/80 to-orange-100/80 px-4 py-2 border-b border-amber-200">
-                            <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
-                                🎯 盲狙淘汰區 (M10~M15)
-                                <span className="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full shadow-sm">高賠率區</span>
-                            </h3>
-                            <p className="text-[10px] text-amber-800 mt-1 opacity-80">請從全部隊伍中，盲狙誰會活著進入這場賽事並拿下勝利！(其中 M12~M15 猜中得 2 分)</p>
-                        </div>
-                        <div className="p-4 space-y-3">
-                            {playoffMatches.map(match => (
-                                <div key={match.id} className="bg-white p-3 rounded-lg border border-red-50 shadow-sm flex flex-col gap-2 relative overflow-hidden">
-                                    {match.id >= 12 && <div className="absolute top-0 right-0 w-8 h-8 bg-amber-100 rotate-45 transform translate-x-4 -translate-y-4"></div>}
-                                    <div className="flex justify-between items-center text-xs text-gray-500">
-                                        <span className="font-bold text-orange-600 bg-orange-50 px-2 border border-orange-100 rounded">M{match.id}</span>
-                                        <span className="font-bold">{match.type} {match.id >= 12 && <span className="text-red-500 ml-1">x2分</span>}</span>
+                        <div className="border border-amber-100 bg-amber-50/30 rounded-xl overflow-hidden">
+                            <div className="bg-gradient-to-r from-amber-100/80 to-orange-100/80 px-4 py-2 border-b border-amber-200">
+                                <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
+                                    🎯 盲狙淘汰區 (M10~M15)
+                                    <span className="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full shadow-sm">高賠率區</span>
+                                </h3>
+                                <p className="text-[10px] text-amber-800 mt-1 opacity-80">請從全部隊伍中，盲狙誰會活著進入這場賽事並拿下勝利！(其中 M12~M15 猜中得 2 分)</p>
+                            </div>
+                            <div className="p-4 space-y-3">
+                                {playoffMatches.map(match => (
+                                    <div key={match.id} className="bg-white p-3 rounded-lg border border-red-50 shadow-sm flex flex-col gap-2 relative overflow-hidden">
+                                        {match.id >= 12 && <div className="absolute top-0 right-0 w-8 h-8 bg-amber-100 rotate-45 transform translate-x-4 -translate-y-4"></div>}
+                                        <div className="flex justify-between items-center text-xs text-gray-500">
+                                            <span className="font-bold text-orange-600 bg-orange-50 px-2 border border-orange-100 rounded">M{match.id}</span>
+                                            <span className="font-bold">{match.type} {match.id >= 12 && <span className="text-red-500 ml-1">x2分</span>}</span>
+                                        </div>
+                                        <select 
+                                            value={guesses[match.id] || ""} 
+                                            onChange={(e) => handleGuessChange(match.id, e.target.value)}
+                                            className="w-full border-gray-200 rounded-md px-3 py-2 border focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-gray-50 focus:bg-white outline-none appearance-none text-sm font-medium text-amber-900"
+                                        >
+                                            <option value="">-- 請盲狙這場勝利的隊伍 --</option>
+                                            {teams.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
                                     </div>
-                                    <select 
-                                        value={guesses[match.id] || ""} 
-                                        onChange={(e) => handleGuessChange(match.id, e.target.value)}
-                                        className="w-full border-gray-200 rounded-md px-3 py-2 border focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-gray-50 focus:bg-white outline-none appearance-none text-sm font-medium text-amber-900"
-                                    >
-                                        <option value="">-- 請盲狙這場勝利的隊伍 --</option>
-                                        {teams.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className={clsx(
-                            "w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all mt-6",
-                            isSubmitting ? "bg-purple-400 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-[0.98] animate-pulse hover:animate-none"
-                        )}
-                    >
-                        {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Crosshair size={22} />}
-                        {isSubmitting ? "上傳預測卡中..." : "確認並送出終極預測"}
-                    </button>
-                </form>
-            </div>
+                        <button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            className={clsx(
+                                "w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all mt-6",
+                                isSubmitting ? "bg-purple-400 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-[0.98] animate-pulse hover:animate-none"
+                            )}
+                        >
+                            {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Crosshair size={22} />}
+                            {isSubmitting ? "上傳預測卡中..." : "確認並送出終極預測"}
+                        </button>
+                    </form>
+                </div>
+            )}
 
             <div>
                 <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
